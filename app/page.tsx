@@ -270,7 +270,7 @@ function Footer() {
   return (
     <footer className="bg-gray-100 py-8 mt-12">
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="text-sm text-gray-700">MathICT Hub—Powered wedoIT™solutions 2016-2026</div>
+        <div className="text-sm text-gray-700">MathICT Hub—Powered by wedoIT™solutions 2016-2026</div>
         <div className="flex gap-4 text-sm">
           <Link href="/docs" className="text-gray-700 hover:text-indigo-600">
             Docs
