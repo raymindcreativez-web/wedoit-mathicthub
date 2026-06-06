@@ -1,9 +1,11 @@
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './firebase';
+import { db } from './firebase';
+import { createUser } from './firestore';
 
 // Check if Firebase is configured
 const isFirebaseConfigured = () => {
-  return auth !== null;
+  return auth !== null && db !== null;
 };
 
 // Sign in with email and password
@@ -121,11 +123,67 @@ export const isAuthenticated = () => {
   return true;
 };
 
+// Register a new user with email, password, and additional data
+export const registerUser = async (userData: {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'teacher' | 'student' | 'parent';
+  schoolId?: string;
+}) => {
+  try {
+    if (!isFirebaseConfigured()) {
+      // Return mock user when Firebase is not configured
+      return {
+        uid: 'mock-user-id',
+        email: userData.email,
+        displayName: userData.name,
+        role: userData.role,
+        schoolId: userData.schoolId || 'default-school',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth!,
+      userData.email,
+      userData.password
+    );
+
+    // Prepare user document for Firestore
+    const firestoreUserData = {
+      email: userData.email,
+      displayName: userData.name,
+      role: userData.role,
+      schoolId: userData.schoolId || 'default-school',
+      createdAt: new Date().toISOString()
+    };
+
+    // Create user document in Firestore
+    await createUser(firestoreUserData);
+
+    // Return the user object (without sensitive data)
+    return {
+      uid: userCredential.user.uid,
+      email: userCredential.user.email,
+      displayName: userData.name,
+      role: userData.role,
+      schoolId: userData.schoolId || 'default-school',
+      createdAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error registering user:', error);
+    throw error;
+  }
+};
+
 export default {
   signIn,
   signUp,
   logout,
   onAuthChange,
   getCurrentUser,
-  isAuthenticated
+  isAuthenticated,
+  registerUser
 };

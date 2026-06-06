@@ -1,0 +1,1 @@
+Vercel deployment test - this file should be accessible at /test.txt if deployment is working
