@@ -5,7 +5,7 @@ let tickets = [
   {
     id: 'TK-001',
     subject: 'Projector not displaying in Room 205',
-    description': 'The projector in Room 205 is not displaying any image when connected to the teacher\'s laptop.',
+    description: 'The projector in Room 205 is not displaying any image when connected to the teacher\'s laptop.',
     status: 'Open',
     priority: 'Medium',
     createdAt: '2026-06-01',
@@ -15,7 +15,7 @@ let tickets = [
   {
     id: 'TK-002',
     subject: 'Unable to access online quiz platform',
-    description': 'Students in Period 3 Algebra class cannot access the quiz platform due to authentication errors.',
+    description: 'Students in Period 3 Algebra class cannot access the quiz platform due to authentication errors.',
     status: 'In Progress',
     priority: 'High',
     createdAt: '2026-06-02',

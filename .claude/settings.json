@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill /f /im node.exe)",
+      "PowerShell(Get-Process node)",
+      "PowerShell(Stop-Process -Force)",
+      "Bash(dir /s package-lock.json)",
+      "Bash(where /r . package-lock.json)",
+      "Bash(dir c:\\\\Users\\\\raymo\\\\package-lock.json)"
+    ]
+  }
+}
