@@ -2,6 +2,8 @@
 
 MathICT AI Hub is an AI-powered web application for mathematics teachers and ICT coordinators. It helps with mathematics intervention planning, quiz generation, ICT support ticket tracking, school documentation, and teacher resource management.
 
+<!-- Deployment fix: Moved app structure to src/app for Next.js 13+ compatibility -->
+
 ## Tech Stack
 
 - Next.js
