@@ -16,6 +16,30 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Map Firebase error codes to user-friendly messages
+  const getFirebaseErrorMessage = (errorCode: string): string => {
+    switch (errorCode) {
+      case "auth/email-already-in-use":
+        return "The email address is already registered. Please use a different email or sign in.";
+      case "auth/invalid-email":
+        return "The email address is not valid. Please enter a valid email address.";
+      case "auth/operation-not-allowed":
+        return "Email/password accounts are not enabled. Please contact support.";
+      case "auth/weak-password":
+        return "The password is too weak. Please choose a stronger password.";
+      case "auth/user-disabled":
+        return "This account has been disabled. Please contact support.";
+      case "auth/user-not-found":
+        return "No user found with this email. Please check your email or sign up.";
+      case "auth/wrong-password":
+        return "Invalid password. Please try again.";
+      case "auth/too-many-requests":
+        return "Too many requests. Please try again later.";
+      default:
+        return "An error occurred during registration. Please try again.";
+    }
+  };
+
   async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -32,7 +56,13 @@ export default function RegisterPage() {
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Failed to register user.");
+      // Handle Firebase errors
+      if (err.code) {
+        setError(getFirebaseErrorMessage(err.code));
+      } else {
+        // Fallback to original error message if no Firebase error code
+        setError(err.message || "Failed to register user.");
+      }
     } finally {
       setLoading(false);
     }
@@ -119,6 +149,16 @@ export default function RegisterPage() {
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>
+
+          {/* Link to go back to homepage if registration fails or user wants to go back */}
+          <div className="mt-4 text-center">
+            <a
+              href="/"
+              className="text-sm text-indigo-600 hover:text-indigo-500"
+            >
+              Back to Home
+            </a>
+          </div>
         </form>
       </div>
     </main>

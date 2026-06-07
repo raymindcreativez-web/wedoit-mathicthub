@@ -1,7 +1,9 @@
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getDoc, doc } from 'firebase/firestore';
 import { auth } from './firebase';
 import { db } from './firebase';
 import { createUser } from './firestore';
+import { AppUser } from '@/types/user';
 
 // Check if Firebase is configured
 const isFirebaseConfigured = () => {
@@ -161,7 +163,10 @@ export const registerUser = async (userData: {
     };
 
     // Create user document in Firestore
-    await createUser(firestoreUserData);
+    await createUser({
+      ...firestoreUserData,
+      uid: userCredential.user.uid
+    });
 
     // Return the user object (without sensitive data)
     return {
@@ -174,6 +179,44 @@ export const registerUser = async (userData: {
     };
   } catch (error) {
     console.error('Error registering user:', error);
+    throw error;
+  }
+};
+
+// Get user profile from Firestore
+export const getUserProfile = async (uid: string) => {
+  try {
+    if (!isFirebaseConfigured()) {
+      // Return mock user profile when Firebase is not configured
+      return {
+        id: uid,
+        email: 'teacher@mathict.com',
+        displayName: 'Teacher',
+        role: 'teacher',
+        schoolId: 'default-school',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // Non-null assertion since we checked isFirebaseConfigured
+    const docRef = doc(db!, 'users', uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as AppUser;
+    } else {
+      // Return default profile if user document doesn't exist
+      return {
+        id: uid,
+        email: 'unknown@mathict.com',
+        displayName: 'Unknown User',
+        role: 'teacher',
+        schoolId: 'default-school',
+        createdAt: new Date().toISOString()
+      };
+    }
+  } catch (error) {
+    console.error('Error getting user profile:', error);
     throw error;
   }
 };

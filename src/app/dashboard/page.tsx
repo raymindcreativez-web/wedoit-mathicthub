@@ -165,6 +165,68 @@ export default function DashboardPage() {
             href="/dashboard"
           />
         </div>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Link href="/math-tracker-flow" className="group flex items-center justify-between bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center space-x-4">
+                <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Math Tracker Flow</h3>
+                  <p className="text-sm text-gray-500">Track student performance and generate intervention plans</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <svg className="h-5 w-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </Link>
+
+            <Link href="/ai-lesson-quiz" className="group flex items-center justify-between bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center space-x-4">
+                <div className="h-12 w-12 bg-indigo-50 rounded-full flex items-center justify-center">
+                  <svg className="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">AI Lesson & Quiz Generator</h3>
+                  <p className="text-sm text-gray-500">Generate lesson plans, quizzes, and remediation activities</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <svg className="h-5 w-5 text-gray-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </Link>
+
+            <Link href="/resources" className="group flex items-center justify-between bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center space-x-4">
+                <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
+                  <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H3a2 2 0 00-2 2v5a2 2 0 002 2h7m0 0V5a2 2 0 012-2h6.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-1M8 7V5a2 2 0 00-2-2H3a2 2 0 00-2 2v14a2 2 0 002 2h5"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Resources</h3>
+                  <p className="text-sm text-gray-500">Access teaching materials and learning resources</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <svg className="h-5 w-5 text-gray-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

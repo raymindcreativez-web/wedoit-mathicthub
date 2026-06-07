@@ -1,0 +1,413 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Get user role from their profile
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Helper: Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    // Helper: Check if user is ICT coordinator
+    function isICTCoordinator() {
+      return isAuthenticated() && getUserRole() == 'ict_coordinator';
+    }
+
+    // Helper: Check if user is teacher
+    function isTeacher() {
+      return isAuthenticated() && getUserRole() == 'teacher';
+    }
+
+    // Helper: Check if user is student
+    function isStudent() {
+      return isAuthenticated() && getUserRole() == 'student';
+    }
+
+    // Helper: Check if user is parent
+    function isParent() {
+      return isAuthenticated() && getUserRole() == 'parent';
+    }
+
+    // Users Collection - User profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (
+                    userId == request.auth.uid ||  // Own profile
+                    isAdmin() ||                   // Admins can read all
+                    isICTCoordinator()             // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && userId == request.auth.uid;  // Users can create their own profile
+
+      allow update: if isAuthenticated() && (
+                    userId == request.auth.uid ||  // Own profile
+                    isAdmin() ||                   // Admins can update all
+                    isICTCoordinator()             // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || userId == request.auth.uid);
+    }
+
+    // Math Scores Collection
+    match /mathScores/{scoreId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||  // Own scores
+                    isTeacher() ||                                  // Teachers can read all
+                    isAdmin() ||                                    // Admins can read all
+                    isICTCoordinator()                              // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                  // Teachers can create scores
+                    isAdmin() ||                                    // Admins can create scores
+                    isICTCoordinator()                              // ICT coordinators can create scores
+                  );
+
+      allow update: if isAuthenticated() && (
+                    isTeacher() ||                                  // Teachers can update scores
+                    isAdmin() ||                                    // Admins can update scores
+                    isICTCoordinator()                              // ICT coordinators can update scores
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Tickets Collection (ICT Helpdesk)
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Ticket creator
+                    resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
+                    isAdmin() ||                                            // Admins can read all
+                    isICTCoordinator()                                      // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated();  // Any authenticated user can create tickets
+
+      allow update: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Ticket creator
+                    resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
+                    isAdmin() ||                                            // Admins can update all
+                    isICTCoordinator()                                      // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Resources Collection
+    match /resources/{resourceId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.isPublic == true ||                 // Public resources
+                    resource.data.createdBy == request.auth.token.email ||  // Owner
+                    isTeacher() ||                                    // Teachers can read all
+                    isAdmin() ||                                      // Admins can read all
+                    isICTCoordinator()                                // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated();  // Any authenticated user can create resources
+
+      allow update: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Owner
+                    isTeacher() ||                                          // Teachers can update all
+                    isAdmin() ||                                            // Admins can update all
+                    isICTCoordinator()                                      // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Owner
+                    isTeacher() ||                                          // Teachers can delete all
+                    isAdmin() ||                                            // Admins can delete all
+                    isICTCoordinator()                                      // ICT coordinators can delete all
+                  );
+    }
+
+    // Classes Collection
+    match /classes/{classId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.teacherId == request.auth.uid ||      // Teacher of class
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can create classes
+                    isAdmin() ||                                        // Admins can create classes
+                    isICTCoordinator()                                  // ICT coordinators can create classes
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.teacherId == request.auth.uid ||      // Teacher of class
+                    isAdmin() ||                                        // Admins can update all
+                    isICTCoordinator()                                  // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own profile (if student ID matches auth UID)
+                    isTeacher() ||                                      // Teachers can read all
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can create student records
+                    isAdmin() ||                                        // Admins can create student records
+                    isICTCoordinator()                                  // ICT coordinators can create student records
+                  );
+
+      allow update: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can update student records
+                    isAdmin() ||                                        // Admins can update student records
+                    isICTCoordinator()                                  // ICT coordinators can update student records
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Class Enrollments Collection
+    match /classEnrollments/{enrollmentId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own enrollments
+                    isTeacher() ||                                      // Teachers can read all enrollments
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Students can enroll themselves
+                    isTeacher() ||                                      // Teachers can enroll students
+                    isAdmin() ||                                        // Admins can enroll students
+                    isICTCoordinator()                                  // ICT coordinators can enroll students
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Students can update their own enrollments
+                    isTeacher() ||                                      // Teachers can update enrollments
+                    isAdmin() ||                                        // Admins can update all
+                    isICTCoordinator()                                  // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Students can delete their own enrollments
+                    isTeacher() ||                                      // Teachers can delete enrollments
+                    isAdmin() ||                                        // Admins can delete all
+                    isICTCoordinator()                                  // ICT coordinators can delete all
+                  );
+    }
+
+    // Assessments Collection
+    match /assessments/{assessmentId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Creator
+                    isTeacher() ||                                          // Teachers can read all
+                    isAdmin() ||                                            // Admins can read all
+                    isICTCoordinator()                                      // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                          // Teachers can create assessments
+                    isAdmin() ||                                            // Admins can create assessments
+                    isICTCoordinator()                                      // ICT coordinators can create assessments
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Creator
+                    isTeacher() ||                                          // Teachers can update all
+                    isAdmin() ||                                            // Admins can update all
+                    isICTCoordinator()                                      // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Assessment Results Collection
+    match /assessmentResults/{resultId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own results
+                    resource.data.createdBy == request.auth.token.email ||  // Creator
+                    isTeacher() ||                                      // Teachers can read all
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can create results
+                    isAdmin() ||                                        // Admins can create results
+                    isICTCoordinator()                                  // ICT coordinators can create results
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own results
+                    resource.data.createdBy == request.auth.token.email ||  // Creator
+                    isTeacher() ||                                      // Teachers can update all
+                    isAdmin() ||                                        // Admins can update all
+                    isICTCoordinator()                                  // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Math Analysis Collection
+    match /mathAnalysis/{analysisId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own analysis
+                    isTeacher() ||                                      // Teachers can read all
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can create analysis
+                    isAdmin() ||                                        // Admins can create analysis
+                    isICTCoordinator()                                  // ICT coordinators can create analysis
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own analysis
+                    isTeacher() ||                                      // Teachers can update all
+                    isAdmin() ||                                        // Admins can update all
+                    isICTCoordinator()                                  // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Intervention Plans Collection
+    match /interventionPlans/{planId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own plan
+                    isTeacher() ||                                      // Teachers can read all
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can create plans
+                    isAdmin() ||                                        // Admins can create plans
+                    isICTCoordinator()                                  // ICT coordinators can create plans
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.studentId == request.auth.uid ||      // Own plan
+                    isTeacher() ||                                      // Teachers can update all
+                    isAdmin() ||                                        // Admins can update all
+                    isICTCoordinator()                                  // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // ICT Tickets Collection
+    match /ictTickets/{ticketId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Creator
+                    resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
+                    isAdmin() ||                                            // Admins can read all
+                    isICTCoordinator()                                      // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated();  // Any authenticated user can create ICT tickets
+
+      allow update: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Creator
+                    resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
+                    isAdmin() ||                                            // Admins can update all
+                    isICTCoordinator()                                      // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // AI Logs Collection
+    match /aiLogs/{logId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.userId == request.auth.uid ||      // Own AI logs
+                    isAdmin() ||                                     // Admins can read all
+                    isICTCoordinator()                               // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated();  // Any authenticated user can create AI logs
+
+      allow update: if isAuthenticated() && (
+                    resource.data.userId == request.auth.uid ||      // Own AI logs
+                    isAdmin() ||                                     // Admins can update all
+                    isICTCoordinator()                               // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+
+    // Runtime Config Collection
+    match /runtimeConfig/{configId} {
+      allow read: if isAuthenticated();  // Any authenticated user can read config
+
+      allow create: if isAuthenticated() && (isAdmin() || isICTCoordinator());  // Only admins/ICT coordinators can create
+
+      allow update: if isAuthenticated() && (isAdmin() || isICTCoordinator());  // Only admins/ICT coordinators can update
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());  // Only admins/ICT coordinators can delete
+    }
+
+    // Notebook References Collection
+    match /notebookRefs/{refId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.isPublic == true ||                 // Public references
+                    resource.data.createdBy == request.auth.token.email ||  // Owner
+                    isTeacher() ||                                    // Teachers can read all
+                    isAdmin() ||                                      // Admins can read all
+                    isICTCoordinator()                                // ICT coordinators can read all
+                  );
+
+      allow create: if isAuthenticated();  // Any authenticated user can create references
+
+      allow update: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Owner
+                    isTeacher() ||                                          // Teachers can update all
+                    isAdmin() ||                                            // Admins can update all
+                    isICTCoordinator()                                      // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (
+                    resource.data.createdBy == request.auth.token.email ||  // Owner
+                    isTeacher() ||                                          // Teachers can delete all
+                    isAdmin() ||                                            // Admins can delete all
+                    isICTCoordinator()                                      // ICT coordinators can delete all
+                  );
+    }
+
+    // Reports Collection
+    match /reports/{reportId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.generatedBy == request.auth.uid ||    // Own reports
+                    isAdmin() ||                                        // Admins can read all
+                    isICTCoordinator()                                  // ICT coordinators can read all
+                    /* Note: For teacher/student access, you might want to add specific logic based on class relationships */
+                  );
+
+      allow create: if isAuthenticated() && (
+                    isTeacher() ||                                      // Teachers can create reports
+                    isAdmin() ||                                        // Admins can create reports
+                    isICTCoordinator()                                  // ICT coordinators can create reports
+                  );
+
+      allow update: if isAuthenticated() && (
+                    resource.data.generatedBy == request.auth.uid ||    // Own reports
+                    isAdmin() ||                                        // Admins can update all
+                    isICTCoordinator()                                  // ICT coordinators can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+    }
+  }
+}

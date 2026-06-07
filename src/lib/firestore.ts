@@ -19,7 +19,8 @@ import {
   query,
   where,
   orderBy,
-  limit
+  limit,
+  setDoc
 } from 'firebase/firestore';
 import type {
   User,
@@ -43,14 +44,15 @@ import type {
 } from '@/types/index';
 
 // User operations
-export const createUser = async (userData: Omit<User, 'id'>) => {
+export const createUser = async (userData: Omit<User, 'id'> & { uid: string }) => {
   try {
     if (!db) {
       // Return mock data when Firebase is not configured
-      return { id: 'mock-id-1', ...userData };
+      return { id: userData.uid, ...userData };
     }
     // Non-null assertion since we checked for null
-    const docRef = await addDoc(collection(db!, 'users'), userData);
+    const docRef = doc(db!, 'users', userData.uid);
+    await setDoc(docRef, userData);
     return { id: docRef.id, ...(userData as object) };
   } catch (error) {
     console.error('Error creating user:', error);
@@ -825,8 +827,10 @@ export const createIctTicket = async (ticketData: Omit<ICTTicket, 'id'>) => {
       return { id: 'mock-icticket-1', ...ticketData, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     }
     // Non-null assertion since we checked for null
-    const docRef = await addDoc(collection(db!, 'ictTickets'), ticketData);
-    return { id: docRef.id, ...ticketData };
+    // Set default status to 'New' for new ICT tickets
+    const ticketWithStatus = { ...ticketData, status: 'New' };
+    const docRef = await addDoc(collection(db!, 'ictTickets'), ticketWithStatus);
+    return { id: docRef.id, ...(ticketWithStatus as object) };
   } catch (error) {
     console.error('Error creating ICT ticket:', error);
     throw error;

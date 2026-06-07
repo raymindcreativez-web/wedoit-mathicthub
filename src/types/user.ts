@@ -1,8 +1,19 @@
+export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
+
+export interface AppUser {
+  id: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  schoolId: string;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   email: string;
   displayName: string;
-  role: 'admin' | 'teacher' | 'student' | 'parent';
+  role: UserRole;
   createdAt: string;
   updatedAt?: string;
   profilePhoto?: string;
@@ -20,5 +31,5 @@ export interface UserCredentials {
 
 export interface UserRegistration extends UserCredentials {
   displayName: string;
-  role: 'admin' | 'teacher' | 'student' | 'parent';
+  role: UserRole;
 }

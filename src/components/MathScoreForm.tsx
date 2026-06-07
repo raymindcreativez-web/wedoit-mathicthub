@@ -1,6 +1,17 @@
-import { useState } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 
-export default function MathScoreForm() {
+interface MathScoreFormProps {
+  onScoreSubmit: (score: {
+    studentName: string;
+    studentId: string;
+    topic: string;
+    score: string;
+    maxScore: string;
+    date: string;
+  }) => void;
+}
+
+export default function MathScoreForm({ onScoreSubmit }: MathScoreFormProps) {
   const [formData, setFormData] = useState({
     studentName: '',
     studentId: '',
@@ -11,7 +22,6 @@ export default function MathScoreForm() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -23,7 +33,6 @@ export default function MathScoreForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(false);
 
     // Validate score is a number and not greater than maxScore
     const scoreNum = parseFloat(formData.score);
@@ -35,11 +44,9 @@ export default function MathScoreForm() {
     }
 
     try {
-      // In a real app, this would send data to an API endpoint
-      // For now, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the parent's submit handler
+      onScoreSubmit(formData);
 
-      setSuccess(true);
       // Reset form after successful submission
       setFormData({
         studentName: '',
@@ -60,11 +67,6 @@ export default function MathScoreForm() {
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-semibold mb-6 text-center">Record Math Score</h2>
 
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md text-green-800">
-          Score recorded successfully!
-        </div>
-      )}
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md text-red-800">
@@ -182,7 +184,7 @@ export default function MathScoreForm() {
       </form>
 
       {/* Optional: Show entered score percentage */}
-      {!loading && formData.score && formData.maxScore && !error && !success && (
+      {!loading && formData.score && formData.maxScore && !error && (
         <div className="mt-4 p-3 bg-blue-50 rounded-md text-center">
           <p className="text-sm font-medium text-gray-900 mb-1">
             Percentage Score:
