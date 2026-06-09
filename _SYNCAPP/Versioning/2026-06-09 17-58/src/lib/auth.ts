@@ -1,0 +1,232 @@
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getDoc, doc } from 'firebase/firestore';
+import { auth } from './firebase';
+import { db } from './firebase';
+import { createUser } from './firestore';
+import { AppUser } from '@/types/user';
+
+// Check if Firebase is configured
+const isFirebaseConfigured = () => {
+  return auth !== null && db !== null;
+};
+
+// Sign in with email and password
+export const signIn = async (email: string, password: string) => {
+  try {
+    if (!isFirebaseConfigured()) {
+      // Return mock user when Firebase is not configured
+      return {
+        uid: 'mock-user-id',
+        email: email,
+        displayName: email.split('@')[0],
+        photoURL: null,
+        isAnonymous: false,
+        providerData: [],
+        refreshToken: 'mock-refresh-token',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          lastSignInAt: new Date().toISOString()
+        }
+      };
+    }
+
+    // Non-null assertion since we checked isFirebaseConfigured
+    const userCredential = await signInWithEmailAndPassword(auth!, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error('Error signing in:', error);
+    throw error;
+  }
+};
+
+// Sign up with email and password
+export const signUp = async (email: string, password: string, additionalData: Record<string, any> = {}) => {
+  try {
+    if (!isFirebaseConfigured()) {
+      // Return mock user when Firebase is not configured
+      return {
+        uid: 'mock-user-id',
+        email: email,
+        displayName: email.split('@')[0],
+        photoURL: null,
+        isAnonymous: false,
+        providerData: [],
+        refreshToken: 'mock-refresh-token',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          lastSignInAt: new Date().toISOString()
+        }
+      };
+    }
+
+    // Non-null assertion since we checked isFirebaseConfigured
+    const userCredential = await createUserWithEmailAndPassword(auth!, email, password);
+    // In a real app, you would save additional data to Firestore here
+    return userCredential.user;
+  } catch (error) {
+    console.error('Error signing up:', error);
+    throw error;
+  }
+};
+
+// Sign out
+export const logout = async () => {
+  try {
+    if (isFirebaseConfigured()) {
+      // Non-null assertion since we checked isFirebaseConfigured
+      await signOut(auth!);
+    }
+    // If Firebase is not configured, just return successfully
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw error;
+  }
+};
+
+// Listen to auth state changes
+export const onAuthChange = (callback: (user: User | null) => void) => {
+  if (isFirebaseConfigured()) {
+    // Non-null assertion since we checked isFirebaseConfigured
+    return onAuthStateChanged(auth!, callback);
+  }
+  // If Firebase is not configured, call callback with null and return unsubscribe function
+  callback(null);
+  return () => {};
+};
+
+// Get current user
+export const getCurrentUser = () => {
+  if (isFirebaseConfigured()) {
+    // Non-null assertion since we checked isFirebaseConfigured
+    return auth!.currentUser;
+  }
+  // Return mock user when Firebase is not configured
+  return {
+    uid: 'mock-user-id',
+    email: 'teacher@mathict.com',
+    displayName: 'Teacher',
+    photoURL: null,
+    isAnonymous: false,
+    providerData: [],
+    refreshToken: 'mock-refresh-token',
+    metadata: {
+      createdAt: new Date().toISOString(),
+      lastSignInAt: new Date().toISOString()
+    }
+  };
+};
+
+// Check if user is authenticated
+export const isAuthenticated = () => {
+  if (isFirebaseConfigured()) {
+    return !!auth!.currentUser;
+  }
+  // When Firebase is not configured, simulate authenticated user for development
+  return true;
+};
+
+// Register a new user with email, password, and additional data
+export const registerUser = async (userData: {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'teacher' | 'student' | 'parent';
+  schoolId?: string;
+}) => {
+  try {
+    if (!isFirebaseConfigured()) {
+      // Return mock user when Firebase is not configured
+      return {
+        uid: 'mock-user-id',
+        email: userData.email,
+        displayName: userData.name,
+        role: userData.role,
+        schoolId: userData.schoolId || 'default-school',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth!,
+      userData.email,
+      userData.password
+    );
+
+    // Prepare user document for Firestore
+    const firestoreUserData = {
+      email: userData.email,
+      displayName: userData.name,
+      role: userData.role,
+      schoolId: userData.schoolId || 'default-school',
+      createdAt: new Date().toISOString()
+    };
+
+    // Create user document in Firestore
+    await createUser({
+      ...firestoreUserData,
+      uid: userCredential.user.uid
+    });
+
+    // Return the user object (without sensitive data)
+    return {
+      uid: userCredential.user.uid,
+      email: userCredential.user.email,
+      displayName: userData.name,
+      role: userData.role,
+      schoolId: userData.schoolId || 'default-school',
+      createdAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error registering user:', error);
+    throw error;
+  }
+};
+
+// Get user profile from Firestore
+export const getUserProfile = async (uid: string) => {
+  try {
+    if (!isFirebaseConfigured()) {
+      // Return mock user profile when Firebase is not configured
+      return {
+        id: uid,
+        email: 'teacher@mathict.com',
+        displayName: 'Teacher',
+        role: 'teacher',
+        schoolId: 'default-school',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // Non-null assertion since we checked isFirebaseConfigured
+    const docRef = doc(db!, 'users', uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as AppUser;
+    } else {
+      // Return default profile if user document doesn't exist
+      return {
+        id: uid,
+        email: 'unknown@mathict.com',
+        displayName: 'Unknown User',
+        role: 'teacher',
+        schoolId: 'default-school',
+        createdAt: new Date().toISOString()
+      };
+    }
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    throw error;
+  }
+};
+
+export default {
+  signIn,
+  signUp,
+  logout,
+  onAuthChange,
+  getCurrentUser,
+  isAuthenticated,
+  registerUser
+};
