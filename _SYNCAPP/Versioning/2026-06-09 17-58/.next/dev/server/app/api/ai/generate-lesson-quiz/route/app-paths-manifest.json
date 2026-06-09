@@ -1,0 +1,3 @@
+{
+  "/api/ai/generate-lesson-quiz/route": "app/api/ai/generate-lesson-quiz/route.js"
+}
