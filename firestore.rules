@@ -7,9 +7,20 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+<<<<<<< Updated upstream
     // Helper: Get user role from their profile
     function getUserRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+=======
+    // Helper: Get user role from their profile (with safety check)
+    function getUserRole() {
+      // Check if user document exists before trying to access its data
+      if (exists(/databases/$(database)/documents/users/$(request.auth.uid))) {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      }
+      // Return empty string if user document doesn't exist
+      return '';
+>>>>>>> Stashed changes
     }
 
     // Helper: Check if user is admin
@@ -17,11 +28,14 @@ service cloud.firestore {
       return isAuthenticated() && getUserRole() == 'admin';
     }
 
+<<<<<<< Updated upstream
     // Helper: Check if user is ICT coordinator
     function isICTCoordinator() {
       return isAuthenticated() && getUserRole() == 'ict_coordinator';
     }
 
+=======
+>>>>>>> Stashed changes
     // Helper: Check if user is teacher
     function isTeacher() {
       return isAuthenticated() && getUserRole() == 'teacher';
@@ -37,12 +51,28 @@ service cloud.firestore {
       return isAuthenticated() && getUserRole() == 'parent';
     }
 
+<<<<<<< Updated upstream
+=======
+    // Helper: Get user display name from their profile (with safety check)
+    function getUserDisplayName() {
+      // Check if user document exists before trying to access its data
+      if (exists(/databases/$(database)/documents/users/$(request.auth.uid))) {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName;
+      }
+      // Return empty string if user document doesn't exist
+      return '';
+    }
+
+>>>>>>> Stashed changes
     // Users Collection - User profiles
     match /users/{userId} {
       allow read: if isAuthenticated() && (
                     userId == request.auth.uid ||  // Own profile
                     isAdmin() ||                   // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()             // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && userId == request.auth.uid;  // Users can create their own profile
@@ -50,7 +80,10 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
                     userId == request.auth.uid ||  // Own profile
                     isAdmin() ||                   // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()             // ICT coordinators can update all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || userId == request.auth.uid);
@@ -62,43 +95,68 @@ service cloud.firestore {
                     resource.data.studentId == request.auth.uid ||  // Own scores
                     isTeacher() ||                                  // Teachers can read all
                     isAdmin() ||                                    // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                              // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                  // Teachers can create scores
                     isAdmin() ||                                    // Admins can create scores
+<<<<<<< Updated upstream
                     isICTCoordinator()                              // ICT coordinators can create scores
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     isTeacher() ||                                  // Teachers can update scores
                     isAdmin() ||                                    // Admins can update scores
+<<<<<<< Updated upstream
                     isICTCoordinator()                              // ICT coordinators can update scores
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // Tickets Collection (ICT Helpdesk)
     match /tickets/{ticketId} {
       allow read: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Ticket creator
+<<<<<<< Updated upstream
                     resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
                     isAdmin() ||                                            // Admins can read all
                     isICTCoordinator()                                      // ICT coordinators can read all
+=======
+                    resource.data.assignedTo == getUserDisplayName() ||  // Assigned to user
+                    isAdmin()                                             // Admins can read all
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated();  // Any authenticated user can create tickets
 
       allow update: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Ticket creator
+<<<<<<< Updated upstream
                     resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
                     isAdmin() ||                                            // Admins can update all
                     isICTCoordinator()                                      // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                    resource.data.assignedTo == getUserDisplayName() ||  // Assigned to user
+                    isAdmin()                                             // Admins can update all
+                  );
+
+      allow delete: if isAuthenticated() && isAdmin();
+>>>>>>> Stashed changes
     }
 
     // Resources Collection
@@ -107,8 +165,12 @@ service cloud.firestore {
                     resource.data.isPublic == true ||                 // Public resources
                     resource.data.createdBy == request.auth.token.email ||  // Owner
                     isTeacher() ||                                    // Teachers can read all
+<<<<<<< Updated upstream
                     isAdmin() ||                                      // Admins can read all
                     isICTCoordinator()                                // ICT coordinators can read all
+=======
+                    isAdmin()                                         // Admins can read all
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated();  // Any authenticated user can create resources
@@ -116,15 +178,23 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Owner
                     isTeacher() ||                                          // Teachers can update all
+<<<<<<< Updated upstream
                     isAdmin() ||                                            // Admins can update all
                     isICTCoordinator()                                      // ICT coordinators can update all
+=======
+                    isAdmin()                                             // Admins can update all
+>>>>>>> Stashed changes
                   );
 
       allow delete: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Owner
                     isTeacher() ||                                          // Teachers can delete all
+<<<<<<< Updated upstream
                     isAdmin() ||                                            // Admins can delete all
                     isICTCoordinator()                                      // ICT coordinators can delete all
+=======
+                    isAdmin()                                             // Admins can delete all
+>>>>>>> Stashed changes
                   );
     }
 
@@ -133,22 +203,34 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (
                     resource.data.teacherId == request.auth.uid ||      // Teacher of class
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can create classes
                     isAdmin() ||                                        // Admins can create classes
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can create classes
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.teacherId == request.auth.uid ||      // Teacher of class
                     isAdmin() ||                                        // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // Students Collection
@@ -157,22 +239,34 @@ service cloud.firestore {
                     resource.data.studentId == request.auth.uid ||      // Own profile (if student ID matches auth UID)
                     isTeacher() ||                                      // Teachers can read all
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can create student records
                     isAdmin() ||                                        // Admins can create student records
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can create student records
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can update student records
                     isAdmin() ||                                        // Admins can update student records
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can update student records
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // Class Enrollments Collection
@@ -181,28 +275,40 @@ service cloud.firestore {
                     resource.data.studentId == request.auth.uid ||      // Own enrollments
                     isTeacher() ||                                      // Teachers can read all enrollments
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     resource.data.studentId == request.auth.uid ||      // Students can enroll themselves
                     isTeacher() ||                                      // Teachers can enroll students
                     isAdmin() ||                                        // Admins can enroll students
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can enroll students
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.studentId == request.auth.uid ||      // Students can update their own enrollments
                     isTeacher() ||                                      // Teachers can update enrollments
                     isAdmin() ||                                        // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can update all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow delete: if isAuthenticated() && (
                     resource.data.studentId == request.auth.uid ||      // Students can delete their own enrollments
                     isTeacher() ||                                      // Teachers can delete enrollments
                     isAdmin() ||                                        // Admins can delete all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can delete all
+=======
+>>>>>>> Stashed changes
                   );
     }
 
@@ -212,23 +318,35 @@ service cloud.firestore {
                     resource.data.createdBy == request.auth.token.email ||  // Creator
                     isTeacher() ||                                          // Teachers can read all
                     isAdmin() ||                                            // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                      // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                          // Teachers can create assessments
                     isAdmin() ||                                            // Admins can create assessments
+<<<<<<< Updated upstream
                     isICTCoordinator()                                      // ICT coordinators can create assessments
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Creator
                     isTeacher() ||                                          // Teachers can update all
                     isAdmin() ||                                            // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                      // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // Assessment Results Collection
@@ -238,24 +356,37 @@ service cloud.firestore {
                     resource.data.createdBy == request.auth.token.email ||  // Creator
                     isTeacher() ||                                      // Teachers can read all
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can create results
                     isAdmin() ||                                        // Admins can create results
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can create results
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.studentId == request.auth.uid ||      // Own results
                     resource.data.createdBy == request.auth.token.email ||  // Creator
                     isTeacher() ||                                      // Teachers can update all
+<<<<<<< Updated upstream
                     isAdmin() ||                                        // Admins can update all
                     isICTCoordinator()                                  // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                    isAdmin() ||                                        // Admins can can update all
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // Math Analysis Collection
@@ -264,23 +395,35 @@ service cloud.firestore {
                     resource.data.studentId == request.auth.uid ||      // Own analysis
                     isTeacher() ||                                      // Teachers can read all
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can create analysis
                     isAdmin() ||                                        // Admins can create analysis
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can create analysis
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.studentId == request.auth.uid ||      // Own analysis
                     isTeacher() ||                                      // Teachers can update all
                     isAdmin() ||                                        // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // Intervention Plans Collection
@@ -289,44 +432,69 @@ service cloud.firestore {
                     resource.data.studentId == request.auth.uid ||      // Own plan
                     isTeacher() ||                                      // Teachers can read all
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can create plans
                     isAdmin() ||                                        // Admins can create plans
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can create plans
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.studentId == request.auth.uid ||      // Own plan
                     isTeacher() ||                                      // Teachers can update all
                     isAdmin() ||                                        // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
 
     // ICT Tickets Collection
     match /ictTickets/{ticketId} {
       allow read: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Creator
+<<<<<<< Updated upstream
                     resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
                     isAdmin() ||                                            // Admins can read all
                     isICTCoordinator()                                      // ICT coordinators can read all
+=======
+                    resource.data.assignedTo == getUserDisplayName() ||  // Assigned to user
+                    isAdmin()                                             // Admins can read all
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated();  // Any authenticated user can create ICT tickets
 
       allow update: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Creator
+<<<<<<< Updated upstream
                     resource.data.assignedTo == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.displayName ||  // Assigned to user
                     isAdmin() ||                                            // Admins can update all
                     isICTCoordinator()                                      // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                    resource.data.assignedTo == getUserDisplayName() ||  // Assigned to user
+                    isAdmin()                                             // Admins can update all
+                  );
+
+      allow delete: if isAuthenticated() && isAdmin();
+>>>>>>> Stashed changes
     }
 
     // AI Logs Collection
@@ -334,7 +502,10 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (
                     resource.data.userId == request.auth.uid ||      // Own AI logs
                     isAdmin() ||                                     // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                               // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated();  // Any authenticated user can create AI logs
@@ -342,21 +513,35 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
                     resource.data.userId == request.auth.uid ||      // Own AI logs
                     isAdmin() ||                                     // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                               // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && isAdmin();
+>>>>>>> Stashed changes
     }
 
     // Runtime Config Collection
     match /runtimeConfig/{configId} {
       allow read: if isAuthenticated();  // Any authenticated user can read config
 
+<<<<<<< Updated upstream
       allow create: if isAuthenticated() && (isAdmin() || isICTCoordinator());  // Only admins/ICT coordinators can create
 
       allow update: if isAuthenticated() && (isAdmin() || isICTCoordinator());  // Only admins/ICT coordinators can update
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());  // Only admins/ICT coordinators can delete
+=======
+      allow create: if isAuthenticated() && isAdmin();  // Only admins can create
+
+      allow update: if isAuthenticated() && isAdmin();  // Only admins can update
+
+      allow delete: if isAuthenticated() && isAdmin();  // Only admins can delete
+>>>>>>> Stashed changes
     }
 
     // Notebook References Collection
@@ -366,7 +551,10 @@ service cloud.firestore {
                     resource.data.createdBy == request.auth.token.email ||  // Owner
                     isTeacher() ||                                    // Teachers can read all
                     isAdmin() ||                                      // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow create: if isAuthenticated();  // Any authenticated user can create references
@@ -375,14 +563,20 @@ service cloud.firestore {
                     resource.data.createdBy == request.auth.token.email ||  // Owner
                     isTeacher() ||                                          // Teachers can update all
                     isAdmin() ||                                            // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                      // ICT coordinators can update all
+=======
+>>>>>>> Stashed changes
                   );
 
       allow delete: if isAuthenticated() && (
                     resource.data.createdBy == request.auth.token.email ||  // Owner
                     isTeacher() ||                                          // Teachers can delete all
                     isAdmin() ||                                            // Admins can delete all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                      // ICT coordinators can delete all
+=======
+>>>>>>> Stashed changes
                   );
     }
 
@@ -391,23 +585,35 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (
                     resource.data.generatedBy == request.auth.uid ||    // Own reports
                     isAdmin() ||                                        // Admins can read all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can read all
+=======
+>>>>>>> Stashed changes
                     /* Note: For teacher/student access, you might want to add specific logic based on class relationships */
                   );
 
       allow create: if isAuthenticated() && (
                     isTeacher() ||                                      // Teachers can create reports
                     isAdmin() ||                                        // Admins can create reports
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can create reports
+=======
+>>>>>>> Stashed changes
                   );
 
       allow update: if isAuthenticated() && (
                     resource.data.generatedBy == request.auth.uid ||    // Own reports
                     isAdmin() ||                                        // Admins can update all
+<<<<<<< Updated upstream
                     isICTCoordinator()                                  // ICT coordinators can update all
                   );
 
       allow delete: if isAuthenticated() && (isAdmin() || isICTCoordinator());
+=======
+                  );
+
+      allow delete: if isAuthenticated() && (isAdmin() || isTeacher());
+>>>>>>> Stashed changes
     }
   }
 }
