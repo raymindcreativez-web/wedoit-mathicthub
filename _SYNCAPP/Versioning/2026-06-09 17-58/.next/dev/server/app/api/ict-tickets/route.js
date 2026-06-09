@@ -1,0 +1,13 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/ict-tickets/route.js")
+R.c("server/chunks/src_app_api_ict-tickets_route_ts_0zifq3v._.js")
+R.c("server/chunks/node_modules_next_1887ha7._.js")
+R.c("server/chunks/node_modules_undici_0f40do8._.js")
+R.c("server/chunks/node_modules_@firebase_auth_dist_node-esm_1sshv1q._.js")
+R.c("server/chunks/node_modules_@grpc_grpc-js_0lmlvqf._.js")
+R.c("server/chunks/node_modules_protobufjs_1yqzkdc._.js")
+R.c("server/chunks/node_modules_@firebase_firestore_dist_index_node_mjs_1eo4qc7._.js")
+R.c("server/chunks/node_modules_0mime3q._.js")
+R.c("server/chunks/[root-of-the-server]__1hkqjq6._.js")
+R.c("server/chunks/_next-internal_server_app_api_ict-tickets_route_actions_1vrgzrb.js")
+R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/ict-tickets/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/ict-tickets/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

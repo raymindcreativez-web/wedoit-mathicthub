@@ -1,0 +1,5 @@
+{"timestamp":"00:00:01.428","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:02.415","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:00:02.737","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:00:02.737","source":"Browser","level":"LOG","message":"Firebase initialized successfully"}
+{"timestamp":"00:00:05.474","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
